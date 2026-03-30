@@ -23,6 +23,7 @@ describe("Sheet", () => {
         Relationships = jasmine.createSpy("Relationships");
         Relationships.prototype.findById = jasmine.createSpy("Relationships.findById").and.callFake(id => ({ attributes: { Target: `TARGET:${id}` } }));
         Relationships.prototype.add = jasmine.createSpy("Relationships.add").and.returnValue({ attributes: { Id: "ID" } });
+        Relationships.prototype.remove = jasmine.createSpy("Relationships.remove");
 
         Sheet = proxyquire("../../lib/Sheet", {
             './Range': Range,
@@ -862,7 +863,24 @@ describe("Sheet", () => {
             sheet.hyperlink("ADDRESS2", undefined);
             expect(sheet._hyperlinks).toEqualJson({});
 
-            // TODO: test that relationship is deleted
+            expect(sheet._relationships.remove).not.toHaveBeenCalled();
+        });
+
+        it("should remove the relationship when removing an external hyperlink", () => {
+            sheet._hyperlinks = {
+                ADDRESS1: { attributes: { 'r:id': "rId1" } },
+                ADDRESS2: { attributes: { 'r:id': "rId2" } }
+            };
+
+            sheet.hyperlink("ADDRESS1", undefined);
+            expect(sheet._relationships.remove).toHaveBeenCalledWith("rId1");
+            expect(sheet._hyperlinks).toEqualJson({
+                ADDRESS2: { attributes: { 'r:id': "rId2" } }
+            });
+
+            sheet.hyperlink("ADDRESS2", undefined);
+            expect(sheet._relationships.remove).toHaveBeenCalledWith("rId2");
+            expect(sheet._hyperlinks).toEqualJson({});
         });
 
         it("should set the hyperlink and the tooltip on the sheet", () => {
