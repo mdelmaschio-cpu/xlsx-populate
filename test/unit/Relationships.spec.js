@@ -76,6 +76,19 @@ describe("Relationships", () => {
         });
     });
 
+    describe("remove", () => {
+        it("should remove a relationship by ID", () => {
+            relationships.remove("rId1");
+            expect(relationshipsNode.children.length).toBe(1);
+            expect(relationshipsNode.children[0].attributes.Id).toBe("rId2");
+        });
+
+        it("should do nothing if the ID is not found", () => {
+            relationships.remove("rId99");
+            expect(relationshipsNode.children.length).toBe(2);
+        });
+    });
+
     describe("findByType", () => {
         it("should return the relationship if matched", () => {
             expect(relationships.findByType("worksheet")).toBe(relationshipsNode.children[1]);
